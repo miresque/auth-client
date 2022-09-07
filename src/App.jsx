@@ -3,23 +3,41 @@ import { useState } from 'react';
 import Form from './components/Form';
 import Input from './components/Input';
 
+const initFormValue = { username: '', password: '' }
+
 export default function App() {
-    const [user, setUser] = useState({ username: '', password: '' });
+    const [registerValue, setRegisterValue] = useState(initFormValue);
+    const [loginValue, setLoginValue] = useState(initFormValue);
     const [registerResponse, setRegisterResponse] = useState('');
     const [loginResponse, setLoginResponse] = useState('');
 
     const register = async (e) => {
         e.preventDefault();
-        // Write your register code here
-
-
+        const res = await fetch('http://localhost:4000/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: registerValue.username, password: registerValue.password})
+        })
+        setRegisterResponse(await res.json())
+        setRegisterValue(initFormValue)
     };
 
     const login = async (e) => {
         e.preventDefault();
-        // Write your login code here
+        const res = await fetch('http://localhost:4000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: loginValue.username, password: loginValue.password})
+        });
+        const result = await res.json();
 
-        
+        localStorage.setItem('jwt', result.token);
+        setLoginResponse(`${localStorage.getItem('jwt')}`)
+        setLoginValue(initFormValue)
     };
 
 
@@ -30,11 +48,20 @@ export default function App() {
     // You can safely ignore everything below this line, it's just boilerplate
     // so you can focus on the exercise requirements
 
-    const handleChange = (e) => {
+    const handleRegisterFormChange = (e) => {
         const { value, name } = e.target;
 
-        setUser({
-            ...user,
+        setRegisterValue({
+            ...registerValue,
+            [name]: value
+        });
+    }
+
+    const handleLoginFormChange = (e) => {
+        const { value, name } = e.target;
+
+        setLoginValue({
+            ...loginValue,
             [name]: value
         });
     }
@@ -43,6 +70,7 @@ export default function App() {
         <div className="App">
 
             <h1>Register</h1>
+            <button onClick={() => {console.log(registerResponse)}}>test</button>
 
             <Form
                 handleSubmit={register}
@@ -52,21 +80,21 @@ export default function App() {
                         type='text'
                         name='username'
                         placeholder='Username'
-                        value={user.username}
-                        handleChange={handleChange}
+                        value={registerValue.username}
+                        handleChange={handleRegisterFormChange}
                     />,
                     <Input
                         key={2}
                         type='password'
                         name='password'
                         placeholder='Password'
-                        value={user.password}
-                        handleChange={handleChange}
+                        value={registerValue.password}
+                        handleChange={handleRegisterFormChange}
                     />
                 ]}
             />
 
-            {registerResponse && <p>{registerResponse}</p>}
+            {registerResponse && <p>Thank you for registering {registerResponse.user.username}!</p>}
 
             <h1>Login</h1>
 
@@ -78,16 +106,16 @@ export default function App() {
                         type='text'
                         name='username'
                         placeholder='Username'
-                        value={user.username}
-                        handleChange={handleChange}
+                        value={loginValue.username}
+                        handleChange={handleLoginFormChange}
                     />,
                     <Input
                         key={2}
                         type='password'
                         name='password'
                         placeholder='Password'
-                        value={user.password}
-                        handleChange={handleChange}
+                        value={loginValue.password}
+                        handleChange={handleLoginFormChange}
                     />
                 ]}
             />
